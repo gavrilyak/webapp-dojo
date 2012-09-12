@@ -212,9 +212,9 @@ define([
  selectionChanged();
 
  this.setInterval(function(){
-    var id = "1"
-    store.notify({summary:id, description:"server:" + (+new Date), changedBy:"gvv"}, id );
+    var id = "1";
+    store.notify({summary:id, description:"server:" + (+new Date()), changedBy:"gvv"}, id );
     store.notify(null, "2");
-    setTimeout(function(){store.notify({summary:"2", description:"added"})}, 1000);
+    setTimeout(function(){store.notify({summary:"2", description:"added"});}, 1000);
  }, 2000);
 });
