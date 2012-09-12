@@ -206,15 +206,15 @@ define([
     on(clearLocalStorageButton, "click", clearLocalStorage);
   }
 
-
+ store.put({summary:"1", description:"will be updated from server"});
  //STARTUP
  //fire selectionChanged, so buttons will disable/enable
  selectionChanged();
 
  this.setInterval(function(){
     var id = "1"
-    store.notify({summary:id, description:"server:" + (+new Date), changedBy:"gvv"}, id );
+    store.notify({summary:id, description:"updated from server:" + (+new Date), changedBy:"gvv"}, id );
     store.notify(null, "2");
-    setTimeout(function(){store.notify({summary:"2", description:"added"})}, 1000);
+    setTimeout(function(){store.notify({summary:"2", description:"added from server"})}, 1000);
  }, 2000);
 });
