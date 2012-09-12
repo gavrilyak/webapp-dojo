@@ -12,7 +12,8 @@ define([
   "dojo/when",
   "dojo/on",
   "todo/TodoStore",
-  "dojo/Deferred"
+  "dojo/Deferred",
+  "dojo/query",
 ], function(
   Grid,
   Keyboard,
@@ -27,17 +28,32 @@ define([
   when,
   on,
   TodoStore,
-  Deferred
+  Deferred,
+  query
 ){
+function byId(id){ return document.getElementById(id); }
 
+return function Index(params, domNode){
+  //allow constructing without new;
+  if(!(this instanceof Index)) return new Index(params, domNode);
+
+  console.log("init");
   //HELPERS
-  function byId(id){ return document.getElementById(id); }
 
   //MODEL, instance of dojo/store, simulated from Memory
   //200ms sleep on each request to simulate network lag
-  var store = new Observable(TodoStore({
-    asyncSleepTime:100
-  }));
+  var MyStore = declare([TodoStore],{
+    asyncSleepTime:500,
+    get:function(){
+      console.log("MY STORE GET");
+      showLoading();
+      var res = this.inherited(arguments);
+      when(res, getSuccess, getError);
+      return res;
+    }
+  });
+
+  var store = Observable(MyStore());
 
   //VIEW
   //our grid class, mixed with plugins - this is pagination grid
@@ -71,7 +87,7 @@ define([
         sortable: false
       }
     }
-  }, "list");
+  }, query("#list", domNode)[0]);
 
   grid.sort("summary");
 
@@ -83,16 +99,18 @@ define([
       summary: "TODOS",
       description: "DESCRIPTION"
     }
-  }, "list2");
+  }, query("#list2", domNode)[0]);
   gridCompleted._used_ = true; //silence unused var warning
 
   //other html elements
-  var taskField            = byId("txtTask");
-  var removeSelectedButton = byId("removeSelected");
-  var editSelectedButton   = byId("editSelected");
-  var removeCompletedButton= byId("removeCompleted");
-  var itemForm             = byId("itemForm");
-  var generateDataButton   = byId("generateData");
+  var taskField            = query("#txtTask", domNode)[0];
+  var removeSelectedButton = query("#removeSelected", domNode)[0];
+  var editSelectedButton   = query("#editSelected", domNode)[0];
+  var removeCompletedButton= query("#removeCompleted", domNode)[0];
+  var itemForm             = query("#itemForm", domNode)[0];
+  var generateDataButton   = query("#generateData", domNode)[0];
+  var savingDiv            = query("#saving", domNode)[0];
+  var loadingDiv           = query("#loading", domNode)[0];
 
   //local storage button - generate it when localStorage is present
   //uses put-selector to generate html
@@ -118,17 +136,41 @@ define([
   }
   //can show/hide some div here
   function saveSuccess(id) {
+    put(savingDiv, '.hidden');
     console.log("Save success:" + id);
   }
 
+  function showLoading(){
+    put(loadingDiv, '!hidden')
+  }
+
+  function getSuccess(){
+    put(loadingDiv, '.hidden');
+  }
+
+  function getError(err){
+    put(loadingDiv, '.fail');
+    put(loadingDiv, '!hidden');
+    alert("Get failed:" +  err);
+    put(loadingDiv, '!fail');
+    return new Deferred().reject("Cancelled");
+  }
+
+
   //store errors, including validation
   function storeError(err) {
+    put(savingDiv, '.fail');
     //if(error.fields) - highligth invalid fields
     alert("Store failed:" +  err);
+    put(savingDiv, '!fail');
+    //put(savingDiv, '!visible')
+    put(savingDiv, '.hidden');
   }
 
   //save object and show errors or success
   function save(obj){
+    //put(savingDiv, '.visible')
+    put(savingDiv, '!hidden');
     return store.put(obj)
     .then(saveSuccess, storeError);
   }
@@ -136,7 +178,7 @@ define([
   //edit object by id - get it from store, edit in edit form, save
   function edit(id){
     return store.get(id)
-    .then(editForm, storeError)
+    .then(editForm)
     .then(save);
   }
 
@@ -211,10 +253,11 @@ define([
  //fire selectionChanged, so buttons will disable/enable
  selectionChanged();
 
- this.setInterval(function(){
+ setInterval(function(){
     var id = "1";
     store.notify({summary:id, description:"updated from server:" + (+new Date()), changedBy:"gvv"}, id );
     store.notify(null, "2");
     setTimeout(function(){store.notify({summary:"2", description:"added from server"});}, 1000);
  }, 2000);
-});
+
+}});

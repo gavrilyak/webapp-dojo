@@ -12,6 +12,10 @@ function(           declare,               Memory,           AsyncMixin,        
     remove:function(id){
       if(~id.indexOf('!')) throw Error("Important tasks cannot be removed");
       return this.inherited(arguments);
+    },
+    get: function(id){
+      if(id == "err") throw Error("Bad tasks");
+      return this.inherited(arguments);
     }
   });
 

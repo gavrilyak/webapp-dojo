@@ -1,90 +1,116 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>Todo List</title>
-		<link rel="stylesheet" href="../dojo/resources/dojo.css">
-		<!--link rel="stylesheet" href="../../css/skins/slate.css"-->
-		<!-- some of the DnD styles reside within the Dijit theme -->
-		<!--link rel="stylesheet" href="../dijit/themes/tundra/Common.css" -->
-		<style>
+  <head>
+    <meta charset="utf-8">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="../dojo/resources/dojo.css">
+    <!--link rel="stylesheet" href="../../css/skins/slate.css"-->
+    <!-- some of the DnD styles reside within the Dijit theme -->
+    <!--link rel="stylesheet" href="../dijit/themes/tundra/Common.css" -->
+    <style>
 #container {
-	width: 500px;
-	margin: auto;
+  width: 500px;
+  margin: auto;
 }
 
 .actionArea {
-	position: absolute;
-	height: 2em;
+  position: absolute;
+  height: 2em;
 }
 .topArea {
-	top: 0;
+  top: 0;
 }
 .bottomArea {
-	bottom: 0;
+  bottom: 0;
 }
 
 #list {
   position: absolute;
   left:0;
-	top: 2em;
-	bottom: 2em;
-	height: auto;
-	width: 500px;
+  top: 2em;
+  bottom: 2em;
+  height: auto;
+  width: 500px;
 }
 
 #list2 {
   position: absolute;
   right:0;
-	top: 2em;
-	bottom: 2em;
-	height: auto;
-	width: 500px;
+  top: 2em;
+  bottom: 2em;
+  height: auto;
+  width: 500px;
 }
 
 #list .field-completed {
-	/* column with checkboxes for completing tasks */
-	width: 30px;
+  /* column with checkboxes for completing tasks */
+  width: 30px;
 }
 
 #list .completed {
-	/* tasks that are checked off on the list get this class applied */
-	text-decoration: line-through;
-	font-style: italic;
+  /* tasks that are checked off on the list get this class applied */
+  text-decoration: line-through;
+  font-style: italic;
 }
 
 #txtTask {
-	/* text field for adding tasks */
-	width: 400px;
+  /* text field for adding tasks */
+  width: 400px;
+}
+
+#saving {
+  position:absolute;
+  left:0;
+  /*display:none;*/
+}
+
+#loading {
+  position:absolute;
+  right:0;
+  /*display:none;*/
+}
+
+.fail {
+  color: red;
+}
+
+.hidden {
+  display:none;
 }
 
 /* IE6 doesn't support top+bottom+height:auto, so do something else */
 .has-ie-6 #list {
-	height: 300px;
+  height: 300px;
 }
 .has-ie-6 .bottomArea {
-	top: 330px;
+  top: 330px;
 }
-		</style>
-	</head>
-	<body class="slate">
-		<div id="container">
-			<form id="itemForm" class="actionArea topArea">
-				<input type="text" id="txtTask" name="task">
-				<button type="submit">Add</button>
-			</form>
-			<div id="list"></div>
-			<div id="list2"></div>
-			<div id="removeArea" class="actionArea bottomArea">
-				<button type="button" id="editSelected">Edit Selected</button>
-				<button type="button" id="removeSelected">Remove Selected</button>
-				<button type="button" id="removeCompleted">Remove Completed</button>
-				<button type="button" id="generateData">Generate Many Data</button>
-			</div>
-		</div>
-		<script src="../dojo/dojo.js" data-dojo-config="async:1"></script>
-		<script>
-		  require(["todo/index"], function(){console.log("Loaded")});
-		</script>
-	</body>
+    </style>
+  </head>
+  <body class="slate">
+    <div id="container"  data-dojo-type="todo/Index">
+      <div id="saving" class="hidden">Saving...</div>
+      <div id="loading" class="hidden">Loading...</div>
+      <form id="itemForm" class="actionArea topArea">
+        <input type="text" id="txtTask" name="task">
+        <button type="submit">Add</button>
+      </form>
+      <div id="list"></div>
+      <div id="list2"></div>
+      <div id="removeArea" class="actionArea bottomArea">
+        <button type="button" id="editSelected">Edit Selected</button>
+        <button type="button" id="removeSelected">Remove Selected</button>
+        <button type="button" id="removeCompleted">Remove Completed</button>
+        <button type="button" id="generateData">Generate Many Data</button>
+      </div>
+    </div>
+    <script src="../dojo/dojo.js" data-dojo-config="async:1"></script>
+    <!--script> require(["todo/index"], function(){console.log("Loaded")}); </script-->
+    <script> require(["dojo/parser", "dojo/ready", "todo/Index"], function(parser, ready){
+      ready(function(){
+        parser.parse(document.body);
+        console.log("Parsed")});
+      })
+          </script>
+  </body>
 </html>

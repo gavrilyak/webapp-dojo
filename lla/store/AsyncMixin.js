@@ -9,14 +9,19 @@ function( declare,             Deferred,        QueryResults){
         toReturn = new QueryResults(toReturn);
         toReturn.total = res.total;
       }
-      setTimeout(function(){
+      if(this.asyncSleepTime == 0){
         d.resolve(res);
-      },this.asyncSleepTime);
+      }else{
+        setTimeout(function(){ d.resolve(res); },this.asyncSleepTime);
+      }
     }catch(e){
-      setTimeout(function(){
+      if(this.asyncSleepTime == 0){
         d.reject(e);
-      },this.asyncSleepTime);
+      }else{
+        setTimeout(function(){ d.reject(e); },this.asyncSleepTime);
+      }
     }
+
     return toReturn;
   };}
 
