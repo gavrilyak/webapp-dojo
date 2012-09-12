@@ -45,10 +45,15 @@ return function Index(params, domNode){
   var MyStore = declare([TodoStore],{
     asyncSleepTime:500,
     get:function(){
-      console.log("MY STORE GET");
       showLoading();
       var res = this.inherited(arguments);
       when(res, getSuccess, getError);
+      return res;
+    },
+    put:function(){
+      showSaving();
+      var res = this.inherited(arguments);
+      when(res, saveSuccess, saveError);
       return res;
     }
   });
@@ -135,14 +140,11 @@ return function Index(params, domNode){
     return new Deferred().resolve(result);
   }
   //can show/hide some div here
-  function saveSuccess(id) {
-    put(savingDiv, '.hidden');
-    console.log("Save success:" + id);
-  }
 
   function showLoading(){
     put(loadingDiv, '!hidden')
   }
+
 
   function getSuccess(){
     put(loadingDiv, '.hidden');
@@ -153,26 +155,30 @@ return function Index(params, domNode){
     put(loadingDiv, '!hidden');
     alert("Get failed:" +  err);
     put(loadingDiv, '!fail');
-    return new Deferred().reject("Cancelled");
+    //return new Deferred().reject("Cancelled");
   }
 
+  function showSaving(){
+    put(savingDiv, '!hidden');
+  }
 
   //store errors, including validation
-  function storeError(err) {
-    put(savingDiv, '.fail');
-    //if(error.fields) - highligth invalid fields
-    alert("Store failed:" +  err);
-    put(savingDiv, '!fail');
-    //put(savingDiv, '!visible')
+  function saveSuccess(id) {
     put(savingDiv, '.hidden');
+  }
+
+  function saveError(err) {
+    put(savingDiv, '.fail');
+    put(savingDiv, '!hidden');
+    when(alert("Store failed:" +  err), function(){
+      put(savingDiv, '!fail');
+      put(savingDiv, '.hidden');
+    })
   }
 
   //save object and show errors or success
   function save(obj){
-    //put(savingDiv, '.visible')
-    put(savingDiv, '!hidden');
-    return store.put(obj)
-    .then(saveSuccess, storeError);
+    return store.put(obj);
   }
 
   //edit object by id - get it from store, edit in edit form, save
@@ -196,8 +202,7 @@ return function Index(params, domNode){
 
   //remove object by id, remove from store, show errors
   function remove(id){
-    return store.remove(id)
-    .then(saveSuccess, storeError);
+    return store.remove(id).then(saveSuccess, saveError);
   }
 
   // query for all completed items and remove them
