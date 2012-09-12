@@ -254,6 +254,8 @@ return function Index(params, domNode){
   }
 
  store.put({summary:"1", description:"will be updated from server"});
+ store.put({summary:"err", description:"try to edit it, should fail to load"});
+ 
  //STARTUP
  //fire selectionChanged, so buttons will disable/enable
  selectionChanged();
