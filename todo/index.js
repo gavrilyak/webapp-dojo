@@ -111,7 +111,7 @@ define([
   //check wether cancelled and aborts editing
   //otherwice return promise for edited object (here it is resolved immediately)
   function editForm(obj) {
-    var newDescription = prompt("Edit row:" + obj.summary, obj.description || "");
+    var newDescription = prompt("Enter description for todo:" + obj.summary, obj.description || "");
     if (newDescription === null) return new Deferred().reject("Cancelled");
     var result = {summary:obj.summary, description:newDescription, completed:obj.completed};
     return new Deferred().resolve(result);
