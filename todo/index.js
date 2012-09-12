@@ -41,9 +41,9 @@ define([
 
   //VIEW
   //our grid class, mixed with plugins - this is pagination grid
-  var TodoGrid = declare([Grid, /*Keyboard, Selection, DnD,*/ Pagination]);
+  //var TodoGrid = declare([Grid, /*Keyboard, Selection, DnD,*/ Pagination]);
   //example of on-demand grid
-  //var TodoGrid = declare([Grid, Keyboard, Selection, DnD, OnDemandGrid]);
+  var TodoGrid = declare([Grid, Keyboard, Selection, DnD, OnDemandGrid]);
 
   //create grid instance and put it at "#list"
   var grid = TodoGrid({
@@ -72,6 +72,8 @@ define([
       }
     }
   }, "list");
+
+  grid.sort("summary");
 
   //Much simpler grid, shows only completed items, put at #list2
   var gridCompleted = OnDemandGrid({
@@ -203,10 +205,16 @@ define([
   if(clearLocalStorageButton){
     on(clearLocalStorageButton, "click", clearLocalStorage);
   }
- //on(byId("serverNotify", "click", function(){ })
- //
+
 
  //STARTUP
  //fire selectionChanged, so buttons will disable/enable
  selectionChanged();
+
+ this.setInterval(function(){
+    var id = "1"
+    store.notify({summary:id, description:"server:" + (+new Date), changedBy:"gvv"}, id );
+    store.notify(null, "2");
+    setTimeout(function(){store.notify({summary:"2", description:"added"})}, 1000);
+ }, 2000);
 });
