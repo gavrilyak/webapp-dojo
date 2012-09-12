@@ -12,7 +12,7 @@ define([
   "dojo/when",
   "dojo/on",
   "todo/TodoStore",
-  "dojo/Deferred",
+  "dojo/Deferred"
 ], function(
   Grid,
   Keyboard,
@@ -35,15 +35,15 @@ define([
 
   //MODEL, instance of dojo/store, simulated from Memory
   //200ms sleep on each request to simulate network lag
-  var store = Observable(TodoStore({
-    asyncSleepTime:200
+  var store = new Observable(TodoStore({
+    asyncSleepTime:100
   }));
 
   //VIEW
   //our grid class, mixed with plugins - this is pagination grid
-  var TodoGrid = declare([Grid, Keyboard, Selection, DnD, Pagination]);
+  //var TodoGrid = declare([Grid, Keyboard, Selection, DnD, Pagination]);
   //example of on-demand grid
-  //var TodoGrid = declare([Grid, Keyboard, Selection, DnD, OnDemandGrid]);
+  var TodoGrid = declare([Grid, Keyboard, Selection, DnD, OnDemandGrid]);
 
   //create grid instance and put it at "#list"
   var grid = TodoGrid({
@@ -82,6 +82,7 @@ define([
       description: "DESCRIPTION"
     }
   }, "list2");
+  gridCompleted._used_ = true; //silence unused var warning
 
   //other html elements
   var taskField            = byId("txtTask");
@@ -93,7 +94,7 @@ define([
 
   //local storage button - generate it when localStorage is present
   //uses put-selector to generate html
-  var clearLocalStorageButton = window.localStorage1 ? put(byId("removeArea"), "button[type=button]", "Clear localStorage") : null;
+  var clearLocalStorageButton = window.localStorage ? put(byId("removeArea"), "button[type=button]", "Clear localStorage") : null;
 
   // observer - can be used for manual binding, not used with grid
   //store.query().observe(function(){ console.log("Observer:" + uneval(Array.slice(arguments)))})
@@ -109,11 +110,10 @@ define([
   //otherwice return promise for edited object (here it is resolved immediately)
   function editForm(obj) {
     var newDescription = prompt("Edit row:" + obj.summary, obj.description || "");
-    if (newDescription == null) return new Deferred().reject("Cancelled");
+    if (newDescription === null) return new Deferred().reject("Cancelled");
     var result = {summary:obj.summary, description:newDescription, completed:obj.completed};
     return new Deferred().resolve(result);
   }
-
   //can show/hide some div here
   function saveSuccess(id) {
     console.log("Save success:" + id);
@@ -147,7 +147,7 @@ define([
   //add object with summary
   //call put, it's ok here
   function add(summary){
-    return save({completed: false, summary: summary})
+    return save({completed: false, summary: summary});
   }
 
   //remove object by id, remove from store, show errors
@@ -159,7 +159,7 @@ define([
   // query for all completed items and remove them
   function removeCompleted(){
     return store.query({completed: true}).forEach(function(item){
-      remove(item.summary) //store.remove(item[store.idProperty])
+      remove(item.summary); //store.remove(item[store.idProperty])
     });
   }
 
@@ -173,6 +173,8 @@ define([
     var howMuch = prompt("How much data:", 100);
     if(!howMuch) return;
     for(var i=0; i<howMuch; i++) store.put({summary:"summary " + i, description:"description " + i});
+    //must be promise.all
+    //setTimeout(function(){ grid.refresh();}, 1000);
   }
 
   // remove all items in grid the quick way (no need to iteratively remove)
@@ -185,21 +187,21 @@ define([
   //enable/disable buttons when selection is present in grid
   function selectionChanged() {
     for(var hasOneSelection in grid.selection) break;
-    editSelectedButton.disabled = removeSelectedButton.disabled = hasOneSelection?"":"disabled"
+    editSelectedButton.disabled = removeSelectedButton.disabled = hasOneSelection?"":"disabled";
   }
 
 
   //events wiring, aka dispatcher
-  on(grid, ".dgrid-row:dblclick", function(event){ return edit(grid.row(event).id)})
+  on(grid, ".dgrid-row:dblclick", function(event){ return edit(grid.row(event).id);});
   on(grid, "dgrid-select", selectionChanged);
   on(grid, "dgrid-deselect", selectionChanged);
-  on(editSelectedButton, "click", function(){ editMany(grid.selection) });
-  on(itemForm, "submit", function(evt){ evt.preventDefault(); add(taskField.value)})
-  on(removeSelectedButton, "click", function(){ removeMany(grid.selection) });
-  on(removeCompletedButton,  "click", removeCompleted)
+  on(editSelectedButton, "click", function(){ editMany(grid.selection);});
+  on(itemForm, "submit", function(evt){ evt.preventDefault(); add(taskField.value);});
+  on(removeSelectedButton, "click", function(){ removeMany(grid.selection);});
+  on(removeCompletedButton,  "click", removeCompleted);
   on(generateDataButton, "click", generateManyData);
   if(clearLocalStorageButton){
-    on(clearLocalStorageButton, "click", clearLocalStorage)
+    on(clearLocalStorageButton, "click", clearLocalStorage);
   }
  //on(byId("serverNotify", "click", function(){ })
  //

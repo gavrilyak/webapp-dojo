@@ -5,20 +5,20 @@ function( declare,             Deferred,        QueryResults){
     var toReturn = d.promise;
     try{
       var res =  this.inherited(arguments);
-      if(name == "query"){
-        toReturn = new QueryResults(d.promise)
+      if(name == "query"){ //need to simulate query separately
+        toReturn = new QueryResults(toReturn);
         toReturn.total = res.total;
       }
       setTimeout(function(){
-         d.resolve(res);
-      },this.asyncSleepTime)
+        d.resolve(res);
+      },this.asyncSleepTime);
     }catch(e){
       setTimeout(function(){
-        d.reject(e)
-      },this.asyncSleepTime)
+        d.reject(e);
+      },this.asyncSleepTime);
     }
     return toReturn;
-  }}
+  };}
 
   return declare([], {
     asyncSleepTime: 0,
@@ -26,5 +26,5 @@ function( declare,             Deferred,        QueryResults){
     query  : Async("query"),
     put    : Async("put"),
     remove : Async("remove")
-  })
-})
+  });
+});

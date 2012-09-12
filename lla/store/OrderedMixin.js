@@ -1,4 +1,4 @@
-define(["dojo/_base/declare"], function(){
+define(["dojo/_base/declare"], function(declare){
 // function used to support ordered insertion of store items
   function calculateOrder(store, object, before, orderField){
     // Calculates proper value of order for an item to be placed before another
@@ -44,4 +44,4 @@ define(["dojo/_base/declare"], function(){
       return this.inherited(arguments);
     }
   });
-})
+});

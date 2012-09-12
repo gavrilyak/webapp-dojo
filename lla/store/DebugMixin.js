@@ -1,11 +1,11 @@
 define(["dojo/_base/declare"], function(declare){
   function Debug(name){
     return function(){
-      console.log(">>Store." + name + ":" + uneval(Array.slice(arguments)))
+      console.log(">>Store." + name + ":" + JSON.stringify([].slice.call(arguments, 0)));
       var result = this.inherited(arguments);
-      console.log("<<Store." + name + ":" + JSON.stringify(result))
+      console.log("<<Store." + name + ":" + JSON.stringify(result));
       return result;
-    }
+    };
   }
   return declare([], {
     get:Debug("get"),
@@ -13,5 +13,5 @@ define(["dojo/_base/declare"], function(declare){
     put:Debug("put"),
     add:Debug("add"),
     remove:Debug("remove")
-  })
-})
+  });
+});
