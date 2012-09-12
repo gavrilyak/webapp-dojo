@@ -41,9 +41,9 @@ define([
 
   //VIEW
   //our grid class, mixed with plugins - this is pagination grid
-  //var TodoGrid = declare([Grid, Keyboard, Selection, DnD, Pagination]);
+  var TodoGrid = declare([Grid, /*Keyboard, Selection, DnD,*/ Pagination]);
   //example of on-demand grid
-  var TodoGrid = declare([Grid, Keyboard, Selection, DnD, OnDemandGrid]);
+  //var TodoGrid = declare([Grid, Keyboard, Selection, DnD, OnDemandGrid]);
 
   //create grid instance and put it at "#list"
   var grid = TodoGrid({
