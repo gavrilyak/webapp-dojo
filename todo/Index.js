@@ -11,7 +11,7 @@ define([
   "put-selector/put",
   "dojo/on",
   "todo/TodoStore",
-  "dojo/query",
+  "dojo/query"
 ], function(
   Grid,
   Keyboard,
@@ -114,7 +114,7 @@ return function Index(params, domNode){
   //otherwise return promise for edited object (here it is resolved immediately)
   function editInForm(obj) {
     var newDescription = prompt("Enter description for todo:" + obj.summary, obj.description || "");
-    if (newDescription === null) throw "Cancelled"// return new Deferred().reject("Cancelled");
+    if (newDescription === null) throw "Cancelled";// return new Deferred().reject("Cancelled");
     var result = {summary:obj.summary, description:newDescription, completed:obj.completed};
     return result;
     //return new Deferred().resolve(result);
@@ -239,7 +239,7 @@ return function Index(params, domNode){
     aspect.around(store, "query", aroundLoad);
     aspect.around(store, "put", aroundSave);
     aspect.around(store, "remove", aroundSave);
-  })
+  });
 
   store.put({summary:"1", description:"will be updated from server"});
   store.put({summary:"err", description:"try to edit it, should fail to load"});
