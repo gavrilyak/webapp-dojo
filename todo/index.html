@@ -58,16 +58,9 @@
   width: 400px;
 }
 
-#saving {
+#indicators{
   position:absolute;
   left:0;
-  /*display:none;*/
-}
-
-#loading {
-  position:absolute;
-  right:0;
-  /*display:none;*/
 }
 
 .fail {
@@ -89,8 +82,9 @@
   </head>
   <body class="slate">
     <div id="container"  data-dojo-type="todo/Index">
-      <div id="saving" class="hidden">Saving...</div>
-      <div id="loading" class="hidden">Loading...</div>
+      <div id="indicators">
+	<span id="saving" class="hidden">Saving...</span> <span id="loading" class="hidden">Loading...</span>
+      </div>
       <form id="itemForm" class="actionArea topArea">
         <input type="text" id="txtTask" name="task">
         <button type="submit">Add</button>

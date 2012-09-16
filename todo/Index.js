@@ -9,10 +9,8 @@ define([
   "dojo/_base/declare",
   "dojo/store/Observable",
   "put-selector/put",
-  "dojo/when",
   "dojo/on",
   "todo/TodoStore",
-  "dojo/Deferred",
   "dojo/query",
 ], function(
   Grid,
@@ -25,10 +23,8 @@ define([
   declare,
   Observable,
   put,
-  when,
   on,
   TodoStore,
-  Deferred,
   query
 ){
 function byId(id){ return document.getElementById(id); }
@@ -37,28 +33,11 @@ return function Index(params, domNode){
   //allow constructing without new;
   if(!(this instanceof Index)) return new Index(params, domNode);
 
-  console.log("init");
   //HELPERS
 
   //MODEL, instance of dojo/store, simulated from Memory
   //200ms sleep on each request to simulate network lag
-  var MyStore = declare([TodoStore],{
-    asyncSleepTime:500,
-    get:function(){
-      showLoading();
-      var res = this.inherited(arguments);
-      when(res, getSuccess, getError);
-      return res;
-    },
-    put:function(){
-      showSaving();
-      var res = this.inherited(arguments);
-      when(res, saveSuccess, saveError);
-      return res;
-    }
-  });
-
-  var store = Observable(MyStore());
+  var store = Observable(TodoStore({asyncSleepTime:500}));
 
   //VIEW
   //our grid class, mixed with plugins - this is pagination grid
@@ -117,7 +96,7 @@ return function Index(params, domNode){
   var savingDiv            = query("#saving", domNode)[0];
   var loadingDiv           = query("#loading", domNode)[0];
 
-  //local storage button - generate it when localStorage is present
+  //local storage button - generate it if localStorage is present
   //uses put-selector to generate html
   var clearLocalStorageButton = window.localStorage ? put(byId("removeArea"), "button[type=button]", "Clear localStorage") : null;
 
@@ -132,65 +111,50 @@ return function Index(params, domNode){
   //returns object after edit
   //show prompt with current object description
   //check wether cancelled and aborts editing
-  //otherwice return promise for edited object (here it is resolved immediately)
-  function editForm(obj) {
+  //otherwise return promise for edited object (here it is resolved immediately)
+  function editInForm(obj) {
     var newDescription = prompt("Enter description for todo:" + obj.summary, obj.description || "");
-    if (newDescription === null) return new Deferred().reject("Cancelled");
+    if (newDescription === null) throw "Cancelled"// return new Deferred().reject("Cancelled");
     var result = {summary:obj.summary, description:newDescription, completed:obj.completed};
-    return new Deferred().resolve(result);
+    return result;
+    //return new Deferred().resolve(result);
   }
   //can show/hide some div here
 
-  function showLoading(){
-    put(loadingDiv, '!hidden')
-  }
-
-
-  function getSuccess(){
-    put(loadingDiv, '.hidden');
-  }
-
-  function getError(err){
-    put(loadingDiv, '.fail');
-    put(loadingDiv, '!hidden');
+  function loadError(err){
     alert("Get failed:" +  err);
-    put(loadingDiv, '!fail');
-    //return new Deferred().reject("Cancelled");
+    throw err;
   }
 
-  function showSaving(){
-    put(savingDiv, '!hidden');
-  }
-
-  //store errors, including validation
-  function saveSuccess(id) {
-    put(savingDiv, '.hidden');
-  }
 
   function saveError(err) {
-    put(savingDiv, '.fail');
-    put(savingDiv, '!hidden');
-    when(alert("Store failed:" +  err), function(){
-      put(savingDiv, '!fail');
-      put(savingDiv, '.hidden');
-    })
+    alert("Save failed:" +  err);
+    throw err;
   }
 
   //save object and show errors or success
   function save(obj){
-    return store.put(obj);
+    return store.put(obj).otherwise(saveError);
+  }
+
+  function load(id){
+    return store.get(id).otherwise(loadError);
+  }
+
+  //remove object by id, remove from store, show errors
+  function remove(id){
+    return store.remove(id).otherwise(saveError);
   }
 
   //edit object by id - get it from store, edit in edit form, save
   function edit(id){
-    return store.get(id)
-    .then(editForm)
-    .then(save);
+    return load(id).then(editInForm).then(save);
   }
 
   //edit many objects, not sure if loop or promise.all here
   function editMany(idsHash){
-    for(var id in idsHash) edit(id);
+    for(var id in idsHash)
+      edit(id);
   }
 
 
@@ -200,15 +164,10 @@ return function Index(params, domNode){
     return save({completed: false, summary: summary});
   }
 
-  //remove object by id, remove from store, show errors
-  function remove(id){
-    return store.remove(id).then(saveSuccess, saveError);
-  }
-
   // query for all completed items and remove them
   function removeCompleted(){
     return store.query({completed: true}).forEach(function(item){
-      remove(item.summary); //store.remove(item[store.idProperty])
+      remove(item.summary).otherwise(saveError); //store.remove(item[store.idProperty])
     });
   }
 
@@ -233,7 +192,7 @@ return function Index(params, domNode){
     grid.refresh();
   }
 
-  //enable/disable buttons when selection is present in grid
+  //enable/disable buttons if selection is present in grid
   function selectionChanged() {
     for(var hasOneSelection in grid.selection) break;
     editSelectedButton.disabled = removeSelectedButton.disabled = hasOneSelection?"":"disabled";
@@ -253,18 +212,47 @@ return function Index(params, domNode){
     on(clearLocalStorageButton, "click", clearLocalStorage);
   }
 
- store.put({summary:"1", description:"will be updated from server"});
- store.put({summary:"err", description:"try to edit it, should fail to load"});
- 
- //STARTUP
- //fire selectionChanged, so buttons will disable/enable
- selectionChanged();
 
- setInterval(function(){
+  //this is separate widget - Save/load indicator
+  require(["dojo/when","dojo/aspect"], function(when, aspect){
+    function showLoading(){ put(loadingDiv, '!hidden');}
+    function hideLoading(){ put(loadingDiv, '.hidden');}
+
+    function aroundLoad(f){ return function(){
+      showLoading();
+      var res =  f.apply(this, arguments);
+      when(res, hideLoading, hideLoading);
+      return res;
+    }}
+
+    function showSaving(){ put(savingDiv, '!hidden'); }
+    function hideSaving(id) { put(savingDiv, '.hidden');}
+
+    function aroundSave(f){ return function(){
+      showSaving();
+      var res =  f.apply(this, arguments);
+      when(res, hideSaving, hideSaving);
+      return res;
+    }}
+
+    aspect.around(store, "get",  aroundLoad);
+    aspect.around(store, "query", aroundLoad);
+    aspect.around(store, "put", aroundSave);
+    aspect.around(store, "remove", aroundSave);
+  })
+
+  store.put({summary:"1", description:"will be updated from server"});
+  store.put({summary:"err", description:"try to edit it, should fail to load"});
+
+  //STARTUP
+  //fire selectionChanged, so buttons will disable/enable
+  selectionChanged();
+
+  setInterval(function(){
     var id = "1";
     store.notify({summary:id, description:"updated from server:" + (+new Date()), changedBy:"gvv"}, id );
     store.notify(null, "2");
     setTimeout(function(){store.notify({summary:"2", description:"added from server"});}, 1000);
- }, 2000);
+  }, 2000);
 
 }});
