@@ -3,21 +3,22 @@
   <head>
     <meta charset="utf-8">
     <title>Todo List</title>
-    <link rel="stylesheet" href="../dojo/resources/dojo.css">
-    <!--link rel="stylesheet" href="../../css/skins/slate.css"-->
-    <!-- some of the DnD styles reside within the Dijit theme -->
-    <!--link rel="stylesheet" href="../dijit/themes/tundra/Common.css" -->
-    <style>
-#container {
-  width: 500px;
-  margin: auto;
-}
+<style>
+
 
 #sidebar {
   position: fixed;
   left:0;
-  top: 2em;
+  top: 5em;
   bottom: 2em;
+  height: auto;
+  width: 300px;
+}
+
+#breadcrumbs {
+  position: fixed;
+  left:0;
+  top: 0;
   height: auto;
   width: 200px;
 }
@@ -35,118 +36,120 @@
   height: 900px;
 }
 
-    </style>
-  </head>
+#breadcrumbs li:before
+{
+  content: "→";
+}
+</style>
+</head>
 
-  <body class="slate">
-    <div id="container">
-      <div id="sidebar">
-	<h1>Sidebar</h1>
-	<ul>
-	  <li><h2><a href="#account">Account</a></h2>
-	  <ul>
-	    <li><a href="#account-list">List accounts</a></li>
-	    <li><a href="#account-edit-${code}">Edit account ${name}</a></li>
-	  </ul>
+<body>
+  <div id="sidebar">
+    <h1>Sidebar</h1>
+    <ul>
+      <li><h2><a href="#account">Account</a></h2>
+      <ul>
+	<li><a href="#account/list">List accounts</a></li>
+	<li><a href="#account/edit/${code}">Edit account ${name}</a></li>
+      </ul>
 
-	  </li>
+      </li>
 
-	  <li><h2><a href="#merchant">Merchant</a></h2>
-	  <ol>
-	    <li><a href="#merchant-register">Register as merchant</a></li>
-	    <li><a href="#merchant-currency">Merchant currencies</a></li>
-	  </ol>
-	  </li>
-	</ul>
+      <li><h2><a href="#merchant">Merchant</a></h2>
+      <ol>
+	<li><a href="#merchant/register">Register as merchant</a></li>
+	<li><a href="#merchant/currency">Merchant currencies</a></li>
+      </ol>
+      </li>
+    </ul>
+  </div>
+
+  <div id="breadcrumbs">
+    breadcrumbs:
+    <li><a href="#">Home</a></li>
+    <li><a href="#account">Account</a></li>
+    <li><a href="#account/edit/${code}">Edit Account ${name}</a></li>
+  </div>
+
+  <div id="content">
+
+    <div id="account" data-breadcrumbs="Account" class="section">
+
+      <h2>Account</h2>
+
+      <div id="account/list" data-breadcrumbs="List" class="page">
+	<h3>Account List</h3>
+	<div>
+	  <table>
+	    <thead>
+	      <th>CODE</th>
+	      <th>NAME</th>
+	      <th>WHEN</th>
+	    </thead>
+	    <tbody>
+	      <tr id="account/list/row/${id}">
+		<td>${code}</td>
+		<td><a href="#account/details/${code}">Info about ${name}</a></td>
+		<td>${when:date}</td>
+	      </tr>
+	      <!--this content will be displayed in file:///. but nginx will cut it out-->
+	      <!--# block name="account-list-row-example-content" -->
+	      <tr id="account-list-row-32">
+		<td>WMZ</td>
+		<td><a href="#account/details/${code}">Info about ACCOUNT43</a></td>
+		<td>12-12-99</td>
+	      </tr>
+	      <!--# endblock -->
+	    </tbody>
+	  </table>
+	</div>
       </div>
 
+      <div id="account/edit/${code}" data-breadcrumbs="Edit ${name}" class="page">
+	<h3>Edit Account ${name}</h3>
+	<form>
+	  Some form for editing is here
+	  <input name="code" value="${code}"></input>
+	  <input name="name" value="${name}"></input>
+	  <input name="when" value="${when}"></input>
+	</form>
+      </div>
 
-      <div id="content">
-
-	<div id="account" class="section">
-
-	  <h2>Account</h2>
-
-	  <div id="account-list" class="page">
-	    <h3>Account List</h3>
-	    <div>
-	      <table>
-		<thead>
-		  <th>CODE</th>
-		  <th>NAME</th>
-		  <th>WHEN</th>
-		</thead>
-		<tbody>
-		  <tr id="account-list-row-${id}">
-		    <td>${account.code}</td>
-		    <td><a href="#account-details-${code}">Info about ${account.name}</a></td>
-		    <td>${when:date}</td>
-		  </tr>
-		</tbody>
-	      </table>
-	    </div>
-	  </div>
-
-	  <div id="account-edit-${code}" class="page">
-	    <h3>Edit Account ${name}</h3>
-	    <form>
-	      Some form for editing is here
-	      <input name="code" value="${code}"></input>
-	      <input name="name" value="${name}"></input>
-	      <input name="when" value="${when}"></input>
-	    </form>
-	  </div>
-
-	  <div id="account-details-${code}" class="page">
-	    <h3>Account ${name} details</h3>
-	    <div>
-	      Edit account
-	      Some form is here
-	    </div>
-	  </div>
-
+      <div id="account/details/${code}" data-breadcrumbs="${name} details" class="page">
+	<h3>Account ${name} details</h3>
+	<div>
+	  Edit account
+	  Some form is here
 	</div>
-
-	<div id="merchant" class="section">
-
-	  <h2>Merchant</h2>
-
-	  <div id="merchant-register" class="page">
-	    <h3>Merchant Registration</h3>
-	    <div>
-	      Register as a merchant
-	    </div>
-	  </div>
-
-	  <div id="merchant-currency" class="page">
-	    <h3>Merchant currencies</h3>
-	    <ul>
-	      <li><span>Webmoney</span>322<a href="#merchant-currency-${code}">Edit currency ${name}</a></li>
-	    </ul>
-	  </div>
-
-	  <div id="merchant-currency-${code}" class="page">
-	    <h3>Edit Currency ${name}</h3>
-	    <div>
-	      Currency ${name} rate is 1/10
-	    </div>
-	  </div>
-
-	</div>
-
       </div>
 
     </div>
 
+    <div id="merchant" data-breadcrumbs="Merchant" class="section">
 
+      <h2>Merchant</h2>
 
-    <script src="../dojo/dojo.js" data-dojo-config="async:1"></script>
-    <!--script> require(["todo/index"], function(){console.log("Loaded")}); </script-->
-    <script> require(["dojo/parser", "dojo/ready"], function(parser, ready){
-      ready(function(){
-	parser.parse(document.body);
-	console.log("Parsed")});
-    })
-  </script>
+      <div id="merchant/register" data-breadcrumbs="Register" class="page">
+	<h3>Merchant Registration</h3>
+	<div>
+	  Register as a merchant
+	</div>
+      </div>
+
+      <div id="merchant/currency" data-breadcrumbs="Currencies" class="page">
+	<h3>Merchant currencies</h3>
+	<ul>
+	  <li><span>Webmoney</span>322<a href="#merchant/currency/${code}">Edit currency ${name}</a></li>
+	</ul>
+      </div>
+
+      <div id="merchant/currency/${code}" data-breadcrumbs="Currency ${name}" class="page">
+	<h3>Edit Currency ${name}</h3>
+	<div>
+	  Currency ${name} rate is 1/10
+	</div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
